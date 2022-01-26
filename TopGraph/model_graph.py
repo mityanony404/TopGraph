@@ -394,8 +394,6 @@ class PersLoss(nn.Module):
         else:
             raise KeyError('Classifier type not found')
 
-        self.init_weights()
-
     def forward(self, batch, x=None):
         node_filt = self.fil(batch.x)
         ph_input = []
