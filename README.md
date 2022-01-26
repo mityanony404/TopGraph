@@ -10,7 +10,7 @@ Install anaconda and create a virtual-env
 2. conda activate venv
 3. conda install pytorch=1.7.1 cudatoolkit=11.0 -c pytorch
 4. Install pytorch-geometric and its dependencies
-
+<code>
 
 	torch-cluster 1.5.9
 	
@@ -21,6 +21,8 @@ Install anaconda and create a virtual-env
 	torch-spline-conv 1.2.1
 
 	torch-geometric 1.4.1
+
+</code>
 
 5. Install ninja. 
     ninja 1.10.2
@@ -55,10 +57,14 @@ GFL: Model based on "Graph Filtration Learning". This code is from https://githu
 	</code>
 2. Install pytorch<=1.9.0, pytorch-geometric and its dependencies. I used the following specifications. 
 <code>
-pytorch 1.9.0 
+pytorch 1.9.0
+
 pytorch-cluster 1.5.9 
+
 pytorch-scatter 2.0.9 
+
 pytorch-sparse  0.6.12 
+
 pytorch-spline-conv 1.2.1
 </code>
 
@@ -81,4 +87,4 @@ Options for <code> --dataset </code> are <code> shrec_16 </code> and <code> Mode
 
 ![alt text][id]  
   
-[id]: /url/to/img.jpg "Title"
+[id]: ./extended_perscombined.pdf "Title"
