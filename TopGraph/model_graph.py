@@ -576,7 +576,7 @@ class GIN(nn.Module):
     def forward(self, batch):
 
         node_deg = batch.node_deg
-        node_lab = batch.node_lab
+        node_lab = batch.node_lab if hasattr(batch, 'node_lab') else None
 
         edge_index = batch.edge_index
 
