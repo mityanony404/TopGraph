@@ -213,7 +213,7 @@ class PershomBase(nn.Module):
 
         y_hat = self.cls(h_0, h_0_ess, h_1_ess)
 
-        return y_hat
+        return y_hat, _
 
     @property
     def feature_dimension(self):
@@ -395,7 +395,7 @@ class PersLoss(nn.Module):
             raise KeyError('Classifier type not found')
 
     def forward(self, batch, x=None):
-        node_filt = self.fil(batch.x)
+        node_filt = self.fil(x)
         ph_input = []
         for i, j, e in zip(batch.sample_pos[:-1], batch.sample_pos[1:], batch.boundary_edges):
             v = node_filt[i:j]
@@ -596,6 +596,7 @@ class GIN(nn.Module):
 
         # x = torch.cat(z, dim=1)
         x = z[-1]
+        out = x
         x = self.global_pool_fn(x, batch.batch)
 
         if self.pooling_strategy == 'sort':
@@ -606,4 +607,4 @@ class GIN(nn.Module):
         if not self.use_as_feature_extractor:
             x = self.cls(x)
 
-        return x
+        return x, out

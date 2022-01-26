@@ -170,10 +170,10 @@ if __name__ == '__main__':
                 if not hasattr(batch, 'node_lab'):
                     batch.node_lab = None
                 batch = batch.to(device)
-                y_hat = model(batch)
+                y_hat, embed = model(batch)
                 loss = crit(y_hat, batch.y)
                 if use_pers:
-                    y_hat_2, _ = persloss(batch, batch.x)
+                    y_hat_2 = persloss(batch, embed)
                     loss_2 = crit(y_hat_2, batch.y)
                     loss = 0.5 * loss + 0.5 * loss_2
                     opt_2.zero_grad()

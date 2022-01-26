@@ -37,7 +37,7 @@ def evaluate(dataloader, model, device):
             batch.boundary_edges = [e.to(device) for e in batch.boundary_edges]
             # batch.boundary_triangles = [f.to(device) for f in batch.boundary_triangles]
 
-            y_hat = model(batch)
+            y_hat, _ = model(batch)
 
             y_pred = y_hat.max(dim=1)[1]
 
