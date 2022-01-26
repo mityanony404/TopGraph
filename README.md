@@ -6,10 +6,15 @@ This is the repository for the manuscript titled "**TopGraph**: A Topological Gr
 
 ### Dependencies
 Install anaconda and create a virtual-env
-1. conda install -n venv python=3.8
-2. conda activate venv
-3. conda install pytorch=1.7.1 cudatoolkit=11.0 -c pytorch
-4. Install pytorch-geometric and its dependencies
+<code>
+conda install -n venv python=3.8
+
+conda activate venv
+
+conda install pytorch=1.7.1 cudatoolkit=11.0 -c pytorch
+</code>
+
+Install pytorch-geometric and its dependencies
 <code>
 
 	torch-cluster 1.5.9
@@ -87,4 +92,4 @@ Options for <code> --dataset </code> are <code> shrec_16 </code> and <code> Mode
 
 ![alt text][id]  
   
-[id]: ./extended_perscombined.pdf "Title"
+[id]: ./extended_perscombined.png "Title"
