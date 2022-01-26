@@ -213,7 +213,7 @@ class PershomBase(nn.Module):
 
         y_hat = self.cls(h_0, h_0_ess, h_1_ess)
 
-        return y_hat, _
+        return y_hat, None
 
     @property
     def feature_dimension(self):

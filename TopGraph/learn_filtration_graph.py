@@ -201,7 +201,7 @@ if __name__ == '__main__':
             val_acc = evaluate(dl_val, model, device)
             fold_val_acc.append(val_acc * 100.0)
             print(
-                f'Fold: {fold_i} Fold train accuracy: {test_acc:.4f}, Fold test accuracy: {train_acc:.4f} Fold val accuracy: {val_acc}',
+                f'Fold: {fold_i} Fold train accuracy: {train_acc:.4f}, Fold test accuracy: {test_acc:.4f} Fold val accuracy: {val_acc}',
                 flush=True)
         else:
             print(f'Fold: {fold_i} Fold train accuracy: {train_acc:.4f}, Fold test accuracy: {test_acc:.4f}',
