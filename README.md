@@ -5,13 +5,14 @@ This is the repository for the manuscript titled "**TopGraph**: A Topological Gr
 ## TopGraph as a regularizer
 
 ### Dependencies
-Install anaconda and create a virtual-env
+Install anaconda and create a conda-env
 <code>
-conda install -n venv python=3.8
+	
+	conda install -n venv python=3.8
 
-conda activate venv
+	conda activate venv
 
-conda install pytorch=1.7.1 cudatoolkit=11.0 -c pytorch
+	conda install pytorch=1.7.1 cudatoolkit=11.0 -c pytorch
 </code>
 
 Install pytorch-geometric and its dependencies
@@ -56,27 +57,39 @@ GFL: Model based on "Graph Filtration Learning". This code is from https://githu
 
 ### Dependencies
 1. Create a new conda environment.
+
+
 <code>
+	
 	conda create -n meshfil python=3.9
+
 	conda activate meshfil
-	</code>
-2. Install pytorch<=1.9.0, pytorch-geometric and its dependencies. I used the following specifications. 
+
+</code>
+
+
+2. Install pytorch<=1.9.0, pytorch-geometric and its dependencies. I used the following specifications.
+
+
 <code>
-pytorch 1.9.0
 
-pytorch-cluster 1.5.9 
+	pytorch 1.9.0
 
-pytorch-scatter 2.0.9 
+	pytorch-cluster 1.5.9 
 
-pytorch-sparse  0.6.12 
+	pytorch-scatter 2.0.9 
 
-pytorch-spline-conv 1.2.1
+	pytorch-sparse  0.6.12 
+
+	pytorch-spline-conv 1.2.1
 </code>
 
 3. Create <code>datasets</code> dir inside Mesh_filtration_learning. Download the dataset from this [link](https://www.dropbox.com/sh/0qa1qiwx41bwubc/AAB6tECbx-bNuA4m6T7fu4rZa) . Unzip the zip. Datasets are SHREC_16 and ModelNet10.
 
 ### Run Experiments 
 1. <code> python learn_filtration.py --lr 1e-3 --num_epochs 100 --dataset shrec_16 </code>
+
+
 Options for <code> --dataset </code> are <code> shrec_16 </code> and <code> ModelNet10</code>.
 
 ### PD-MeshNet
