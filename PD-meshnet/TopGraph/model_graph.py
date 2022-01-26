@@ -10,9 +10,11 @@ from torch_geometric.nn import global_sort_pool
 import functools
 import operator
 from torch_geometric.nn import GINConv, global_add_pool, global_sort_pool
+from chofer_torchex.nn import SLayerRationalHat
 
-import extendedpersistence
+import TopGraph.extendedpersistence as extendedpersistence
 ph = extendedpersistence.extended_pers.vertex_persistence_batch
+
 
 class Net(nn.Module):
     def __init__(self, input_dim, output_dim, hidden_dim=None, barcode_dim=0):
@@ -101,7 +103,7 @@ def gin_mlp_factory(gin_mlp_type: str, dim_in: int, dim_out: int, dim_hidden: in
 
 
 def ClassifierHead(
-        dataset,
+        num_classes,
         dim_in: int = None,
         hidden_dim: int = None,
         drop_out: float = None):
@@ -118,7 +120,7 @@ def ClassifierHead(
     if drop_out > 0:
         tmp += [nn.Dropout(p=drop_out)]
 
-    tmp += [nn.Linear(hidden_dim, dataset.num_classes)]
+    tmp += [nn.Linear(hidden_dim, num_classes)]
 
     return nn.Sequential(*tmp)
 
@@ -366,7 +368,7 @@ class PersImage(nn.Module):
         M = torch.meshgrid(*coords)
         mu = torch.cat([tens.unsqueeze(0) for tens in M], dim=0).to(self.device)
         bc_inp = torch.reshape(bp_inp, [-1, num_pts, dimension_before] + [1 for _ in range(dimension_before)])
-        gaussian = -torch.square(bc_inp - mu) / (2 * self.im_var)
+        gaussian = -((bc_inp - mu)**2) / (2 * self.im_var)
         im = torch.exp(gaussian.sum(axis=2)) / (2 * torch.tensor(np.pi) * self.im_var)
         im = im.sum(axis=1)
         im = im / im.max()
@@ -421,7 +423,7 @@ class PersImClassifier(nn.Module):
 
 class BaseLine(torch.nn.Module):
     def __init__(self,
-                 dataset,
+                 num_classes,
                  input_dim=6,
                  gin_number=None,
                  gin_dimension=None,
@@ -445,7 +447,7 @@ class BaseLine(torch.nn.Module):
 
         for _ in range(num_lin_layers-1):
             self.lins.append(nn.Linear(gin_dimension, gin_dimension))
-        self.lins.append(nn.Linear(gin_dimension, dataset.num_classes))
+        self.lins.append(nn.Linear(gin_dimension, num_classes))
 
     def forward(self, x, edge_index, batch):
         # 1. Obtain node embeddings
@@ -479,7 +481,7 @@ class GCN(nn.Module):
         self.bns.append(nn.BatchNorm1d(hidden_dim))
         self.act = nn.ReLU()
         for n in range(num_layers-1):
-            self.convs.append(GCNConv(hidden_dim, hidden_dim))
+            self.convs.append(GCNConv(2*hidden_dim, hidden_dim))
             self.bns.append(nn.BatchNorm1d(hidden_dim))
         self.lins = nn.ModuleList()
         for n in range(num_lin_layers-1):
@@ -536,7 +538,7 @@ class PersLoss(PershomBase):
         self.init_weights()
 
     def forward(self, batch, x=None):
-        node_filt = self.fil(x)
+        node_filt = self.fil(batch.x)
         ph_input = []
         ph_input_sup = []
         for i, j, e in zip(batch.sample_pos[:-1], batch.sample_pos[1:], batch.boundary_edges):
@@ -550,7 +552,6 @@ class PersLoss(PershomBase):
         y_hat = self.cls(h_0, h_1)
         # loss = self.loss_fn(y_hat, batch.y)
         return y_hat, node_filt
-
 
 
 

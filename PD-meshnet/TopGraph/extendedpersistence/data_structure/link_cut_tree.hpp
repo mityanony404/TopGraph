@@ -14,6 +14,13 @@
  * @description manages a dynamic forest of rooted trees
  * @note in each splay tree, nodes are sorted from bottom to top. the rightmost node of the root splay tree of the auxiliary tree is the root of represented tree.
  */
+template<class T, class U = T>
+T exchange(T& obj, U&& new_value)
+{
+    T old_value = std::move(obj);
+    obj = std::forward<U>(new_value);
+    return old_value;
+}
 template <class Monoid>
 class link_cut_tree {
     typedef typename Monoid::value_type value_type;
@@ -57,13 +64,13 @@ class link_cut_tree {
         }
         switch (get_parent_edge_type(a)) {
             case -1:  // left
-                parent[a] = std::exchange(parent[b], a);
-                left[b] = std::exchange(right[a], b);
+                parent[a] = exchange(parent[b], a);
+                left[b] = exchange(right[a], b);
                 if (left[b] != -1) parent[left[b]] = b;
                 break;
             case 1:  // right
-                parent[a] = std::exchange(parent[b], a);
-                right[b] = std::exchange(left[a], b);
+                parent[a] = exchange(parent[b], a);
+                right[b] = exchange(left[a], b);
                 if (right[b] != -1) parent[right[b]] = b;
                 break;
             default:  // root

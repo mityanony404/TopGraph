@@ -28,8 +28,7 @@ class SimpleDataset(torch.utils.data.Dataset):
 
 
 class MyOwnDataset(torch_geometric.data.Dataset):
-    def __init__(self, root, transform=None, pre_transform=None, phase='train', verbose=True, decimate_mesh=False,
-                 face_count=1000):
+    def __init__(self, root, transform=None, pre_transform=None, phase='train', verbose=True):
         self.phase = phase
         self.targets = []
         self.avg_num_nodes = None
@@ -37,8 +36,6 @@ class MyOwnDataset(torch_geometric.data.Dataset):
         self.num_classes = None
         self.verbose = verbose
         self.meshes = []
-        self.decimate_mesh = decimate_mesh
-        self.num_faces = face_count
         super().__init__(root, transform, pre_transform)
 
     # @property
@@ -75,8 +72,6 @@ class MyOwnDataset(torch_geometric.data.Dataset):
             # print(f'{m}')
             self.targets.append(y)
             mesh = trimesh.load(m)
-            if self.decimate_mesh:
-                mesh = mesh.simplify_quadratic_decimation(self.num_faces)
             vertex_normal = mesh.vertex_normals.copy()
             mesh_data = utils.from_trimesh(mesh)
             mesh_data = face2edge(mesh_data)

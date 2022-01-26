@@ -70,17 +70,10 @@ private:
 };
 using std::vector;
 using torch::Tensor;
-typedef std::pair<long, long> Edge;
-typedef std::pair<int64_t, Edge> Pers;
-using namespace torch::indexing;
+
+//using namespace torch::indexing;
 
 
-
-void print64_t_pairs(vector<Pers> &ed) {
-    for (auto e: ed) {
-        std::cout << e.first << " (" << e.second.first << "," << e.second.second << ")" << std::endl;
-    }
-}
 vector<Tensor> compute_pd0(const Tensor & vertex_filtration,
                            const vector<Tensor> & boundary_info, const bool mirror = false){
     auto num_nodes = vertex_filtration.size(0);
@@ -92,7 +85,6 @@ vector<Tensor> compute_pd0(const Tensor & vertex_filtration,
     edge_val = edge_val.index({sorted_edge_indices});
     auto num_edges = sorted_edges.size(0);
     vector<Tensor> pd_0;
-    pd_0.reserve(num_nodes-1);
 
     for(auto i = 0; i < num_edges; i++){
         auto e = sorted_edges[i];
@@ -134,6 +126,7 @@ vector<Tensor> extended_filt_persistence_single(const Tensor & vertex_filtration
                                                         const vector<Tensor> & boundary_info){
     vector<Tensor> pd;
     auto options = torch::TensorOptions().dtype(at::kLong);
+    torch::Device device(torch::cuda::is_available() ? torch::kCUDA : torch::kCPU);
     auto num_nodes = vertex_filtration.size(0);
     torch::Tensor dummy_ind = torch::randint(num_nodes, {1, }, options);
     const Tensor dummy_pair = torch::stack({vertex_filtration.index({dummy_ind}), vertex_filtration.index({dummy_ind})}, 1);
@@ -182,8 +175,10 @@ vector<Tensor> extended_filt_persistence_single(const Tensor & vertex_filtration
                 std::swap(root, merged);
         }
         auto merged_val = vertex_filtration[merged];
-        Tensor pd_pair = torch::stack({merged_val, e_val});
-        pd_0_down.emplace_back(pd_pair);
+        if (std::abs(e_val.item<double>() - merged_val.item<double>()) > EPS){
+            Tensor pd_pair = torch::stack({merged_val, e_val});
+            pd_0_down.emplace_back(pd_pair);
+        }
         uf.link(root, merged);
     }
     //this is wrong, it assumes one connected component
@@ -281,10 +276,11 @@ vector<Tensor> extended_filt_persistence_single(const Tensor & vertex_filtration
         }
         auto cut_edge_val= vertex_filtration[critical_vertex];
         //std::cout << "CE " << cut_edge_val.item<double>() << " AE " << pos_edge_val.item<double>() << std::endl;
-        auto pers_pair = torch::stack({cut_edge_val, pos_edge_val});
-        pd_1_ext.push_back(pers_pair);
+        if(std::abs(pos_edge_val.item<double>()-cut_edge_val.item<double>())>EPS){
+           auto pers_pair = torch::stack({cut_edge_val, pos_edge_val});
+           pd_1_ext.push_back(pers_pair);
+         }
     }
-
     try{
         auto pd_0_up_t = torch::stack(pd_0_up);
         pd.push_back(pd_0_up_t);
@@ -314,11 +310,44 @@ vector<Tensor> extended_filt_persistence_single(const Tensor & vertex_filtration
         pd.push_back(pd_1_ext_t);
         }
     catch(const std::exception& e){
-            pd.push_back(dummy_pair);
+
+//            auto pd_1_ext_t = torch::stack(pd_1_ext);
+            pd.push_back(dummy_pair.to(device));
     }
+
+
+
+
+//    pd.push_back(pd_1_rel);
+
+
+
+
 
     return pd;
 
+}
+vector<vector<Tensor>> extended_filt_persistence_batch(const vector<std::tuple<Tensor, vector<Tensor>>> & batch){
+auto futures = vector<std::future<vector<Tensor>>>();
+for (auto & arg: batch){
+
+futures.push_back(
+        async(std::launch::async,[=]{
+                  return extended_filt_persistence_single(
+                          std::get<0>(arg),
+                          std::get<1>(arg)
+                  );
+              }
+)
+);
+}
+auto ret = vector<vector<Tensor>>();
+for (auto & fut: futures){
+ret.push_back(
+        fut.get()
+);
+}
+return ret;
 }
 
 vector<Tensor> vertex_filt_persistence_single(const Tensor & vertex_filtration,
@@ -353,28 +382,6 @@ vector<Tensor> vertex_filt_persistence_single(const Tensor & vertex_filtration,
     }
     return pd;
 
-}
-vector<vector<Tensor>> extended_filt_persistence_batch(const vector<std::tuple<Tensor, vector<Tensor>>> & batch){
-auto futures = vector<std::future<vector<Tensor>>>();
-for (auto & arg: batch){
-
-futures.push_back(
-        async(std::launch::async,[=]{
-                  return extended_filt_persistence_single(
-                          std::get<0>(arg),
-                          std::get<1>(arg)
-                  );
-              }
-)
-);
-}
-auto ret = vector<vector<Tensor>>();
-for (auto & fut: futures){
-ret.push_back(
-        fut.get()
-);
-}
-return ret;
 }
 
 vector<vector<Tensor>> vertex_filt_persistence_batch(const vector<std::tuple<Tensor, vector<Tensor>>> & batch){

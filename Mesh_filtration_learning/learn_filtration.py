@@ -22,12 +22,12 @@ if __name__ == '__main__':
     parser.add_argument('--lmda', type=float, default=1e-4)
     parser.add_argument('--num_epochs', type=int, default=200)
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--dataset', type=str, default='shrec_16_small')
+    parser.add_argument('--dataset', type=str, default='shrec_16')
     args = parser.parse_args()
     data_dir = data_path[args.dataset]
     BATCH_SIZE = args.batch_size
-    train_dataset = MyOwnDataset(data_dir, verbose=True, phase='train', decimate_mesh=False, face_count=1000)
-    test_dataset = MyOwnDataset(data_dir, verbose=True, phase='test', decimate_mesh=False, face_count=1000)
+    train_dataset = MyOwnDataset(data_dir, verbose=True, phase='train')
+    test_dataset = MyOwnDataset(data_dir, verbose=True, phase='test')
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, collate_fn=my_collate, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, collate_fn=my_collate, shuffle=False)
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
         os.mkdir(save_dir)
 
     for epoch_i in range(1, training_cfg['num_epochs']//2 + 1):
-        epoch_loss = 0.
+        epoch_loss = []
         for batch_i, batch in enumerate(train_loader, start=1):
             batch = batch.to(device)
             y_hat, embed = model(batch)
@@ -64,12 +64,13 @@ if __name__ == '__main__':
             loss = loss_1
             opt.zero_grad()
             loss.backward()
-            epoch_loss += loss.item()
+            batch_loss = loss.item()
+            epoch_loss.append(batch_loss)
             opt.step()
 
             if verbose:
                 print(
-                    f"Epoch {epoch_i}/{training_cfg['num_epochs']}, Batch {batch_i}/{len(train_loader)} Loss: {np.mean(epoch_loss):.4f}",
+                    f"Epoch {epoch_i}/{training_cfg['num_epochs']}, Batch {batch_i}/{len(train_loader)} Loss: {batch_loss:.4f}",
                     end='\n')
         train_acc = evaluate(train_loader, model, device)
         test_acc = evaluate(test_loader, model, device)
@@ -85,7 +86,7 @@ if __name__ == '__main__':
                 torch.save(model, save_path)
                 # torch.save(persloss, pers_path)
     for epoch_i in range(training_cfg['num_epochs'] // 2 + 1, training_cfg['num_epochs'] + 1):
-        epoch_loss = 0.
+        epoch_loss = []
         for batch_i, batch in enumerate(train_loader, start=1):
             batch = batch.to(device)
             y_hat, embed = model(batch)
@@ -97,7 +98,8 @@ if __name__ == '__main__':
             opt_2.zero_grad()
             loss.backward()
             # loss_2.backward()
-            epoch_loss += loss.item()
+            batch_loss = loss.item()
+            epoch_loss.append(loss.item())
             opt.step()
             opt_2.step()
 

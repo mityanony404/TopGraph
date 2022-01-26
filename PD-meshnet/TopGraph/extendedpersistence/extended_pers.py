@@ -4,10 +4,11 @@ from torch.utils.cpp_extension import load
 from typing import Tuple, List
 from torch import Tensor
 import os
+
+__module_file_dir = os.path.dirname(os.path.realpath(__file__))
+__cpp_src = os.path.join(__module_file_dir, "extended_pers.cpp")
 try:
-    extended_pers = load(name="extended_cpp", sources=[os.path.join(os.getcwd(),
-                                                                    "extendedpersistence",
-                                                                    "extended_pers.cpp")])
+    extended_pers = load(name="extended_cpp", sources=[__cpp_src])
 except Exception as ex:
     print(f"Error in {__file__}. Failed jit compilation. Maybe your CUDA environment is messed up?")
     print(f"Error was {ex}")
@@ -15,10 +16,6 @@ except Exception as ex:
 
 def extended_persistence(ph_inp: List[Tuple[Tensor, List[Tensor]]]):
     return extended_pers.extended_persistence_batch(ph_inp)
-
-
-def vert_persistence(ph_inp: List[Tuple[Tensor, List[Tensor]]]):
-    return extended_pers.vertex_persistence_batch(ph_inp)
 
 
 # v = torch.tensor([0, 1, 2, 3], dtype=torch.float)
